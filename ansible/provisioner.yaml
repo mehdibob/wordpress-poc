@@ -1,0 +1,134 @@
+---
+- hosts: all
+  become: true
+
+  tasks:
+    # Apach & PHP setup
+    - name: Install prerequisites
+      apt: name=aptitude update_cache=yes state=latest force_apt_get=yes
+
+    - name: Install Apache and PHP Packages
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: [ 'apache2',
+              'libapache2-mod-php',
+              'libapache2-mod-auth-openidc',
+              'php-bcmath',
+              'php-cli',
+              'php-curl',
+              'php-gd',
+              'php-intl',
+              'php-json',
+              'php-ldap',
+              'php-mbstring',
+              'php-mime-type',
+              'php-mysql',
+              'php-soap',
+              'php-tidy',
+              'php-uploadprogress',
+              'php-xmlrpc',
+              'php-yaml',
+              'php-zip' ,
+              'libcap2-bin',
+              'gettext-base',
+              'curl'
+            ]
+
+    - name: Apache 80 port binding
+      shell: setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2
+
+    - name: Set ownership for Apache user www-data
+      shell: a2disconf other-vhosts-access-log && \
+             chown -Rh www-data. /var/run/apache2 /var/log/apache2 /var/www/html
+
+    - name: Clean setup files
+      shell: apt-get clean && \
+             rm -rf /var/lib/apt/lists/*
+    
+    - name: Enable Apache modules
+      shell: a2enmod rewrite headers expires ext_filter
+
+    - name: Write the Vhost configuration
+      copy:
+        dest: "/etc/apache2/sites-enabled/000-default.conf"
+        content: |
+          ServerName localhost
+          <VirtualHost *:80>
+            ServerAdmin webmaster@localhost
+            DocumentRoot /var/www/html
+            <Directory "/var/www/html">
+              Options -Indexes
+              AllowOverride All
+            </Directory>
+          </VirtualHost>
+
+    - name: Remove default page
+      file:
+        path: /var/www/html/index.html
+        state: absent
+
+    # Wordpress setup
+    - name: TEMP Download and unpack latest WordPress
+      shell: curl https://wordpress.org/latest.tar.gz -o /tmp/wordpress.tar.gz && \
+             tar -xf /tmp/wordpress.tar.gz -C /var/www/html && \
+             mv /var/www/html/wordpress/* /var/www/html
+    - name: write .htaccess file
+      copy:
+        dest: /var/www/html/.htaccess
+        content: |
+          # BEGIN WordPress
+          RewriteEngine On
+          RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+          RewriteBase /
+          RewriteRule ^index\.php$ - [L]
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteRule . /index.php [L]
+          # END WordPress
+
+    - name: Write wp-config
+      copy:
+        dest: "/var/www/html/wp-config.php"
+        content: |
+          <?php
+          define( 'DB_NAME', getenv('DB_NAME', '') );
+          define( 'DB_USER', getenv('DB_USER', '') );
+          define( 'DB_PASSWORD', getenv('DB_PASSWORD', '') );
+          define( 'DB_HOST', getenv('DB_HOST', '') );
+          define( 'DB_CHARSET', 'utf8' );
+          define( 'DB_COLLATE', '' );
+          define('FS_METHOD', 'direct');
+          define( 'AUTH_KEY',         '{{ lookup('password', '/dev/null chars=ascii_letters length=64') }}' );
+          define( 'SECURE_AUTH_KEY',  '{{ lookup('password', '/dev/null chars=ascii_letters length=64') }}' );
+          define( 'LOGGED_IN_KEY',    '{{ lookup('password', '/dev/null chars=ascii_letters length=64') }}' );
+          define( 'NONCE_KEY',        '{{ lookup('password', '/dev/null chars=ascii_letters length=64') }}' );
+          define( 'AUTH_SALT',        '{{ lookup('password', '/dev/null chars=ascii_letters length=64') }}' );
+          define( 'SECURE_AUTH_SALT', '{{ lookup('password', '/dev/null chars=ascii_letters length=64') }}' );
+          define( 'LOGGED_IN_SALT',   '{{ lookup('password', '/dev/null chars=ascii_letters length=64') }}' );
+          define( 'NONCE_SALT',       '{{ lookup('password', '/dev/null chars=ascii_letters length=64') }}' );
+          $table_prefix = 'wp_';
+          define( 'WP_DEBUG', false );
+          if ( ! defined( 'ABSPATH' ) ) {
+            define( 'ABSPATH', dirname( __FILE__ ) . '/' );
+          }
+          require_once( ABSPATH . 'wp-settings.php' );
+
+    - name: Set ownership for Apache user www-data
+      shell: a2disconf other-vhosts-access-log && \
+             chown -Rh www-data /var/run/apache2 /var/log/apache2 /var/www/html && \
+             chmod -R 755 /var/www/html && \
+             chmod 644 /var/www/html/index.php
+
+    - name: Write entrypoint script
+      copy:
+        dest: "/entrypoint.sh"
+        content: |
+          #!/usr/bin/env bash
+          # Start Apache
+          /usr/sbin/apache2ctl -D FOREGROUND
+      tags: [ wordpress ]
+
+    - name: Make entrypoint script executable
+      file: 
+        dest: "/entrypoint.sh"
+        mode : a+x
+        
