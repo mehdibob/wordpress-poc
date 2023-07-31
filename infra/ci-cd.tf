@@ -22,6 +22,7 @@ resource "google_cloudbuild_trigger" "wordpress" {
         step {
             args       = [
                 "init",
+                "wordpress-image.pkr.hcl"
             ]
             env        = []
             name       = "hashicorp/packer"
@@ -29,14 +30,17 @@ resource "google_cloudbuild_trigger" "wordpress" {
             wait_for   = []
         }
         step {
+            entrypoint = "packer"
             args       = [
                 "build",
-                "-var \"GCP_PROJECT_ID=${var.GCP_PROJECT_ID}\"",
-                "-var \"GCR_HOST=${var.GCP_GCR_HOST}\"",
+                "-var",
+                "GCP_PROJECT_ID=${var.GCP_PROJECT_ID}",
+                "-var",
+                "GCR_HOST=${var.GCP_GCR_HOST}",
                 "wordpress-image.pkr.hcl"
             ]
             env        = []
-            name       = "hashicorp/packer"
+            name       = "uapple/packer-docker-builder"
             secret_env = []
             wait_for   = []
         }
