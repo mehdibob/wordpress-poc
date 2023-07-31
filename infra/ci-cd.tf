@@ -64,18 +64,18 @@ resource "google_cloudbuild_trigger" "wordpress" {
 
     }
 
-    # github {
-    #     owner = "mehdibob"
-    #     name = "wordpress-poc"
-    #     push {
-    #         invert_regex = false
-    #         branch = "main"
-    #     }
-    # }
-
-    source_to_build {
-        uri       = "https://mehdibob/wordpress-poc"
-        ref       = "refs/heads/main"
-        repo_type = "GITHUB"
+    github {
+        owner = "mehdibob"
+        name = "wordpress-poc"
+        push {
+            invert_regex = false
+            branch = "main"
+        }
     }
+
+    # source_to_build {
+    #     uri       = "https://mehdibob/wordpress-poc"
+    #     ref       = "refs/heads/main"
+    #     repo_type = "GITHUB"
+    # }
 }

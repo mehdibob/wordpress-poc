@@ -1,10 +1,12 @@
 resource "kubernetes_namespace" "wordpress" {
+    depends_on = [google_container_node_pool.cluster_pool]
     metadata {
         name = "wordpress"
     }
 }
 
 resource "kubernetes_deployment" "wordpress" {
+  depends_on = [google_container_node_pool.cluster_pool]
   metadata {
     name      = "wordpress"
     namespace = "wordpress"
@@ -15,7 +17,7 @@ resource "kubernetes_deployment" "wordpress" {
   }
 
   spec {
-    replicas = 1
+    replicas = 0
 
     selector {
       match_labels = {
@@ -105,6 +107,7 @@ resource "kubernetes_deployment" "wordpress" {
 }
 
 resource "kubernetes_service" "wordpress" {
+  depends_on = [google_container_node_pool.cluster_pool]
   metadata {
     name      = "wordpress"
     namespace = "wordpress"
@@ -134,6 +137,7 @@ resource "google_compute_global_address" "wordpress_ip" {
 }
 
 resource "kubernetes_ingress_v1" "wordpress" {
+  depends_on = [google_container_node_pool.cluster_pool]
   metadata {
     name      = "wordpress"
     namespace = "wordpress"
