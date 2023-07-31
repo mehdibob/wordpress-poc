@@ -1,4 +1,5 @@
 resource "google_compute_firewall" "healthcheckers" {
+  depends_on = [time_sleep.wait_for_services]
   allow {
     ports    = ["10256", "80", "8080"]
     protocol = "tcp"

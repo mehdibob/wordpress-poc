@@ -1,9 +1,20 @@
 resource "google_service_account" "cluster_sa" {
+  depends_on = [time_sleep.wait_for_services]
   account_id   = "cluster-sa"
   display_name = "Cluster Service Account"
 }
 
+resource "google_project_iam_binding" "cluster_sa_editor_binding" {
+  project = var.GCP_PROJECT_ID
+  role    = "roles/editor"
+  
+  members = [
+    "serviceAccount:${google_service_account.cluster_sa.email}"
+  ]
+}
+
 resource "google_container_cluster" "cluster" {
+  depends_on = [time_sleep.wait_for_services]
   name                     = "cluster"
   location                 = "europe-west1-b"
   remove_default_node_pool = true
@@ -34,6 +45,7 @@ resource "google_container_cluster" "cluster" {
 }
 
 resource "google_container_node_pool" "cluster_pool" {
+  depends_on = [time_sleep.wait_for_services]
   name       = "cluster-pool"
   location   = "europe-west1-b"
   cluster    = google_container_cluster.cluster.name

@@ -9,6 +9,10 @@ terraform {
       source = "hashicorp/kubernetes"
       version = "2.22.0"
     }
+    time = {
+      source = "hashicorp/time"
+      version = "0.9.1"
+    }
   }
 }
 
@@ -25,6 +29,8 @@ module "project-services" {
   project_id = var.GCP_PROJECT_ID
 
   activate_apis = [
+    "serviceusage.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
     "compute.googleapis.com",
     "container.googleapis.com",
     "containerregistry.googleapis.com",
@@ -34,6 +40,16 @@ module "project-services" {
     "sqladmin.googleapis.com",
     "servicenetworking.googleapis.com"
   ]
+}
+
+resource "time_sleep" "wait_for_services" {
+  depends_on = [module.project-services]
+
+  create_duration = "180s"
+}
+
+output "enabled_apis" {
+  value  = module.project-services.enabled_apis
 }
 
 data "google_client_config" "current" {

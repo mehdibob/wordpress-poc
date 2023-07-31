@@ -8,6 +8,7 @@ locals {
 }
 
 resource "google_cloudbuild_trigger" "wordpress" {
+    depends_on = [time_sleep.wait_for_services]
     name           = "wordpress"
     description    = "CI/CD pipeline for wordpress application"
     disabled       = false
@@ -75,9 +76,4 @@ resource "google_cloudbuild_trigger" "wordpress" {
         }
     }
 
-    # source_to_build {
-    #     uri       = "https://mehdibob/wordpress-poc"
-    #     ref       = "refs/heads/main"
-    #     repo_type = "GITHUB"
-    # }
 }

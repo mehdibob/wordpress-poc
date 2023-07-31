@@ -11,8 +11,6 @@ For the cloud infrastructure :
 
 ## 2. Run the project
 After creating GCP project and linking the git repository in the cloud build section in the GCP web connsole, use the local machine shell, after pulling the git repo :
-- enable Service Usage service from (put your project id in the url): https://console.cloud.google.com/apis/library/serviceusage.googleapis.com?project=YOUR_PROJECT_ID
-- enable Cloud resource manager from (put your project id in the url): https://console.cloud.google.com/apis/library/cloudresourcemanager.googleapis.com?project=YOUR_PROJECT_ID
 - enter the infra directory put the values for variables in terraform.tfvars
 - run terraform init (in infra directory)
 - run terraform apply (in infra directory)
@@ -21,8 +19,8 @@ This provision all the cloud infrastructure for the PoC.
 ## 3. Components
 In the wordress container image build, packer provision ansible in the ubuntu base with shell, then lunch ansible inside the container to provision apache, php components and setup wordpress.
 apache is preconfigured with generic vhost that accepts any host name on port 80, and point on wordpress, the control of ssl termination and the host name will be flexible, and will be controled throw the cloud loadbalancer side (in our case kubernetes ingresss configuration).
-in the runtime of thism image, the wp-config script get database variables from env, provided in kubernetes deployment resource.
-the GKE cluster is private, for better security.
+in the runtime of thism image, the wp-config script get database variables (DB_HOST DB_NAME DB_USER DB_PASSWORD) from env, provided in kubernetes deployment resource.
+the GKE cluster is private (VMs), for better security.
 
 ## 4. Problems
 the first problem encountred, is unarchiving wordpress from url using : ansible.builtin.unarchive module
