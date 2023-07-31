@@ -27,7 +27,8 @@ the GKE cluster is private, for better security.
 ## 4. Problems
 the first problem encountred, is unarchiving wordpress from url using : ansible.builtin.unarchive module
 so, I switched to ansible shell module to download and unzip wordpress to destination directory.
-the second problem is the health check for the deployment, the cloud backkend service pointing on the container get its health check path from readyness probe and liveness probe path configured in kubernetes deployment, and it must return status code 200, so I used valid path (/wp-includes/images/blank.gif) thyat returns 200.
+the second problem, gcp services take time to be enabled, the first terraform apply stops on creating compute resources, after that can be reapplied.
+the third problem is the health check for the deployment, the cloud backkend service pointing on the container get its health check path from readyness probe and liveness probe path configured in kubernetes deployment, and it must return status code 200, so I used valid path (/wp-includes/images/blank.gif) thyat returns 200.
 
 ## 5. Best HA/automated architecture and farther work
 For best reliability, we can implement health check script (/healthcheck.php):
