@@ -2,10 +2,8 @@ locals {
     deploy_cmd = <<EOT
                     gcloud components install kubectl
                     gcloud container clusters get-credentials ${google_container_cluster.cluster.name} --zone ${google_container_cluster.cluster.location} --project ${var.GCP_PROJECT_ID}
-                    kubectl scale --replicas=0 -n wordpress --context=gke_${google_container_cluster.cluster.name}_${google_container_cluster.cluster.location}_${google_container_cluster.cluster.name} \
-                    deployment/wordpress
-                    kubectl scale --replicas=1 -n wordpress --context=gke_${google_container_cluster.cluster.name}_${google_container_cluster.cluster.location}_${google_container_cluster.cluster.name} \
-                    deployment/wordpress
+                    kubectl scale --replicas=0 -n wordpress deployment/wordpress
+                    kubectl scale --replicas=1 -n wordpress deployment/wordpress
                 EOT
 }
 
