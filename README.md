@@ -16,7 +16,6 @@ After creating GCP project and linking the git repository in the cloud build sec
 - run terraform apply (in infra directory)
 This provision all the cloud infrastructure for the PoC.
 - Connect the GIT repository to cloud build in web console.
-- In cloud build settinng, enable kubernetes developer permission.
 - Lunch one time the build.
 
 ## 3. Components
