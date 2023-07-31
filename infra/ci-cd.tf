@@ -7,15 +7,7 @@ locals {
                 EOT
 }
 
-resource "google_project_iam_binding" "cicd_editor_binding" {
-  depends_on = [time_sleep.wait_for_services]
-  project = var.GCP_PROJECT_ID
-  role    = "roles/editor"
-  
-  members = [
-    "serviceAccount:${var.GCP_PROJECT_NUM}@cloudbuild.gserviceaccount.com"
-  ]
-}
+
 
 resource "google_cloudbuild_trigger" "wordpress" {
     depends_on = [time_sleep.wait_for_services]

@@ -4,12 +4,14 @@ resource "google_service_account" "cluster_sa" {
   display_name = "Cluster Service Account"
 }
 
-resource "google_project_iam_binding" "cluster_sa_editor_binding" {
+resource "google_project_iam_binding" "editor_binding" {
   project = var.GCP_PROJECT_ID
   role    = "roles/editor"
   
   members = [
-    "serviceAccount:${google_service_account.cluster_sa.email}"
+    "serviceAccount:${google_service_account.cluster_sa.email}",
+    "serviceAccount:${var.GCP_PROJECT_NUM}@cloudbuild.gserviceaccount.com"
+
   ]
 }
 
