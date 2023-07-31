@@ -7,7 +7,7 @@ For the wordpress container :
 - tag the image with the appropriate container host and project-id
 - push the image to GCP container registry 
 For the cloud infrastructure :
-- Use terraform to provision VPC network, subnet, GKE cluster with its node pool, the ci/cd pipeline, kubernetes resources (deployment, service, ingress) .
+- Use terraform to provision VPC network, subnet, GKE cluster with its node pool, the ci/cd pipeline, kubernetes resources (deployment, service, ingress) plus Cloud SQL Mysql instance .
 
 ## 2. Run the project
 After creating GCP project and linking the git repository in the cloud build section in the GCP web connsole, use the local machine shell, after pulling the git repo :
@@ -15,6 +15,8 @@ After creating GCP project and linking the git repository in the cloud build sec
 - run terraform init (in infra directory)
 - run terraform apply (in infra directory)
 This provision all the cloud infrastructure for the PoC.
+- Connect the GIT repository to cloud build in web console.
+- Lunch one time the build.
 
 ## 3. Components
 In the wordress container image build, packer provision ansible in the ubuntu base with shell, then lunch ansible inside the container to provision apache, php components and setup wordpress.
@@ -25,8 +27,7 @@ the GKE cluster is private (VMs), for better security.
 ## 4. Problems
 the first problem encountred, is unarchiving wordpress from url using : ansible.builtin.unarchive module
 so, I switched to ansible shell module to download and unzip wordpress to destination directory.
-the second problem, gcp services take time to be enabled, the first terraform apply stops on creating compute resources, after that can be reapplied.
-the third problem is the health check for the deployment, the cloud backkend service pointing on the container get its health check path from readyness probe and liveness probe path configured in kubernetes deployment, and it must return status code 200, so I used valid path (/wp-includes/images/blank.gif) thyat returns 200.
+the second problem is the health check for the deployment, the cloud backkend service pointing on the container get its health check path from readyness probe and liveness probe path configured in kubernetes deployment, and it must return status code 200, so I used valid path (/wp-includes/images/blank.gif) that returns 200.
 
 ## 5. Best HA/automated architecture and farther work
 For best reliability, we can implement health check script (/healthcheck.php):
